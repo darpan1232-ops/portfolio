@@ -13,6 +13,8 @@ const app = express();
 if (process.env.MONGO_URI) {
   connectDB();
 }
+// Trust proxy for Render
+app.set('trust proxy', 1);
 
 // Middleware
 app.use(cors({
