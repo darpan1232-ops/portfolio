@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEBDEASH | Elite Digital Portfolio</title>
+
+    <!-- Fonts: Playfair Display (Serif) and Manrope (Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- React & DOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- GSAP Animation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #131212;
+            --text-color: #f0f0f0;
+            --accent-primary: #ffffff;
+            --accent-secondary: #555555;
+            --kabir-color: #64ffda; /* Cyan for Frontend */
+            --darpan-color: #ff6b6b; /* Coral for Backend */
+            --aayush-color: #feca57; /* Gold for Design */
+            
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Manrope', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-sans);
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Utility --- */
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; }
+        h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; }
+        img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* --- Custom Scrollbar --- */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--accent-secondary); border-radius: 3px; }
+
+        /* --- Custom Cursor --- */
+        .cursor-dot, .cursor-outline {
+            position: fixed; top: 0; left: 0; transform: translate(-50%, -50%);
+            border-radius: 50%; z-index: 9999; pointer-events: none;
+        }
+        .cursor-dot { width: 6px; height: 6px; background: white; }
+        .cursor-outline { width: 30px; height: 30px; border: 1px solid var(--accent-secondary); transition: width 0.3s; }
+
+        /* --- Hero Section --- */
+        .hero {
+            height: 100vh; display: flex; flex-direction: column; justify-content: center;
+            align-items: flex-start; padding-left: 10vw;
+        }
+        .hero-title { font-size: clamp(3rem, 9vw, 8rem); line-height: 1; margin-bottom: 1rem; }
+        .hero-title span { display: block; opacity: 0; transform: translateY(20px); }
+        .hero-subtitle { font-size: 1.2rem; color: var(--accent-secondary); opacity: 0; transform: translateY(20px); letter-spacing: 2px; text-transform: uppercase; }
+
+        /* --- Intro --- */
+        .philosophy { padding: 10rem 0; font-size: clamp(1.5rem, 3vw, 2.5rem); font-family: var(--font-serif); color: var(--accent-secondary); border-top: 1px solid #222; }
+        
+        /* --- Team Section --- */
+        .team-section { padding: 5rem 0 10rem; }
+        .section-header { margin-bottom: 6rem; border-bottom: 1px solid var(--accent-secondary); padding-bottom: 2rem; display: flex; justify-content: space-between; }
+        .section-title { font-size: 3rem; }
+
+        /* Member Card Layout */
+        .member-card {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 6rem;
+            align-items: center; margin-bottom: 10rem; opacity: 0;
+            /* Default transform handled by GSAP */
+        }
+        
+        /* Alternating Layout Logic */
+        .member-card:nth-child(even) { direction: rtl; }
+        .member-card:nth-child(even) .member-info { direction: ltr; }
+        .member-card:nth-child(even) .member-visual { direction: ltr; }
+
+        .member-visual { height: 700px; overflow: hidden; position: relative; border-radius: 4px; }
+        .member-visual img { transition: transform 1.5s ease; filter: grayscale(100%) contrast(1.1); }
+        .member-card:hover .member-visual img { transform: scale(1.05); filter: grayscale(0%); }
+
+        .member-info { padding: 2rem; }
+        .member-role { 
+            font-size: 0.9rem; text-transform: uppercase; letter-spacing: 4px; 
+            display: inline-block; margin-bottom: 1.5rem; font-weight: 600;
+        }
+        .member-name { font-size: clamp(2.5rem, 5vw, 4.5rem); margin-bottom: 2rem; line-height: 1.1; }
+        .member-desc { font-size: 1.1rem; color: #aaa; margin-bottom: 2.5rem; max-width: 500px; line-height: 1.8; }
+        
+        .tech-stack { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .tech-tag { 
+            padding: 0.6rem 1.2rem; border: 1px solid var(--accent-secondary); 
+            font-size: 0.8rem; border-radius: 100px; text-transform: uppercase; letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        /* --- Theme Specifics --- */
+        .kabir .member-role { color: var(--kabir-color); }
+        .kabir .tech-tag:hover { background: var(--kabir-color); color: black; border-color: var(--kabir-color); }
+        
+        .darpan .member-role { color: var(--darpan-color); }
+        .darpan .tech-tag:hover { background: var(--darpan-color); color: black; border-color: var(--darpan-color); }
+        
+        .aayush .member-role { color: var(--aayush-color); }
+        .aayush .tech-tag:hover { background: var(--aayush-color); color: black; border-color: var(--aayush-color); }
+
+        /* --- Contact --- */
+        .contact { padding: 8rem 0; text-align: center; }
+        .form-container { max-width: 600px; margin: 4rem auto; text-align: left; }
+        .input-group { margin-bottom: 2.5rem; position: relative; }
+        .input-field { 
+            width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--accent-secondary);
+            padding: 1rem 0; color: white; font-size: 1.5rem; font-family: var(--font-serif); transition: 0.3s;
+        }
+        .input-field:focus { outline: none; border-bottom-color: white; }
+        .btn { 
+            background: white; color: black; border: none; padding: 1rem 3rem; 
+            font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: scale(1.05); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        
+        /* Status Message Styles */
+        .status-message {
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            animation: slideIn 0.3s ease-out;
+        }
+        .status-message.success {
+            background-color: rgba(100, 255, 218, 0.1);
+            border: 1px solid var(--kabir-color);
+            color: var(--kabir-color);
+        }
+        .status-message.error {
+            background-color: rgba(255, 107, 107, 0.1);
+            border: 1px solid var(--darpan-color);
+            color: var(--darpan-color);
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        textarea.input-field {
+            resize: vertical;
+            min-height: 120px;
+            font-family: var(--font-serif);
+        }
+
+        /* --- Footer --- */
+        footer { padding: 3rem; text-align: center; border-top: 1px solid #222; color: #555; font-size: 0.8rem; }
+
+        /* --- Mobile Responsive --- */
+        @media (max-width: 900px) {
+            .hero { padding-left: 2rem; }
+            .member-card { grid-template-columns: 1fr; gap: 2rem; text-align: center; }
+            .member-card:nth-child(even) { direction: ltr; }
+            .member-visual { height: 500px; order: -1; }
+            .member-info { padding: 0; }
+            .member-desc { margin: 0 auto 2rem auto; }
+            .tech-stack { justify-content: center; }
+            .cursor-dot, .cursor-outline { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        gsap.registerPlugin(ScrollTrigger);
+
+       
+        const TEAM_DATA = [
+            {
+                id: 1,
+                name: "Kabir Kc",
+                role: "Front End Architect",
+                // --- IMAGINARY DESCRIPTION ---
+                desc: "Kabir treats the browser as a canvas, not just a rendering engine. He specializes in bridging the gap between static design and fluid interaction. With a deep understanding of accessibility and performance, he ensures that every animation serves a purpose and every pixel aligns with the brand's voice. He doesn't just write code; he orchestrates user experiences.",
+                // Placeholder image (Seed: kabir)
+                image: "https://thumbs.dreamstime.com/b/passport-document-id-photo-business-man-portrait-concept-young-handsome-stylish-guy-formal-wear-white-background-119717703.jpg", 
+                tech: ["React", "GSAP", "WebGL", "TypeScript"],
+                themeClass: "kabir"
+            },
+            {
+                id: 2,
+                name: "Darpan Lamsal",
+                role: "Backend Engineer",
+                // --- IMAGINARY DESCRIPTION ---
+                desc: "While users interact with the visual layer, Darpan ensures the foundation is unshakeable. An architect of logic, he designs scalable systems capable of handling millions of requests without breaking a sweat. From complex database schemas to secure API gateways, he builds the invisible infrastructure that powers modern applications. To Darpan, security isn't an afterthought—it's the baseline.",
+                // Placeholder image (Seed: darpan)
+                image: "https://thumb.photo-ac.com/a1/a1aea98f75d2b7430454a8d7533bff19_t.jpeg",
+                tech: ["Node.js", "Python", "Redis", "AWS"],
+                themeClass: "darpan"
+            },
+            {
+                id: 3,
+                name: "Aayush Chettri",
+                role: "Lead Visual Designer",
+                // --- IMAGINARY DESCRIPTION ---
+                desc: "Aayush believes that design is the language of emotion. Before a single line of code is written, he defines the visual identity that sets the tone for the entire project. Specializing in typography, color theory, and motion graphics, Aayush translates abstract client goals into tangible, beautiful interfaces that communicate clearly and leave a lasting impression.",
+                // Placeholder image (Seed: aayush)
+                image: "https://chucksu.com.tw/wp-content/uploads/2023/08/查克蘇-精緻證件照_證件照-07-1.jpg",
+                tech: ["Figma", "After Effects", "UI/UX", "Blender"],
+                themeClass: "aayush"
+            }
+        ];
+
+        // --- COMPONENTS ---
+
+        const Cursor = () => {
+            const dotRef = React.useRef(null);
+            const outlineRef = React.useRef(null);
+
+            React.useEffect(() => {
+                const move = (e) => {
+                    gsap.to(dotRef.current, { x: e.clientX, y: e.clientY, duration: 0 });
+                    gsap.to(outlineRef.current, { x: e.clientX, y: e.clientY, duration: 0.15, ease: "power2.out" });
+                };
+                window.addEventListener("mousemove", move);
+                return () => window.removeEventListener("mousemove", move);
+            }, []);
+            return <><div ref={dotRef} className="cursor-dot"/><div ref={outlineRef} className="cursor-outline"/></>;
+        };
+
+        const Hero = () => {
+            const titleRef = React.useRef(null);
+            const subRef = React.useRef(null);
+
+            React.useLayoutEffect(() => {
+                const ctx = gsap.context(() => {
+                    const tl = gsap.timeline();
+                    tl.to(titleRef.current.children, { 
+                        y: 0, opacity: 1, stagger: 0.1, duration: 1.2, ease: "power3.out", delay: 0.5 
+                    })
+                    .to(subRef.current, { y: 0, opacity: 1, duration: 1 }, "-=0.8");
+                }, titleRef);
+                return () => ctx.revert();
+            }, []);
+
+            return (
+                <section className="hero">
+                    <h1 className="hero-title" ref={titleRef}>
+                        <span>Digital</span>
+                        <span>Craftsmen.</span>
+                    </h1>
+                    <p className="hero-subtitle" ref={subRef}>WEB.2026</p>
+                </section>
+            );
+        };
+
+        const Philosophy = () => {
+            const textRef = React.useRef(null);
+            React.useLayoutEffect(() => {
+                gsap.from(textRef.current, {
+                    scrollTrigger: { trigger: textRef.current, start: "top 80%", scrub: 1 },
+                    opacity: 0.2, x: -30
+                });
+            }, []);
+            return (
+                <section className="philosophy container">
+                    <p ref={textRef}>
+                        We believe that true luxury lies in simplicity and performance. 
+                        In an era of digital noise, we create clarity.
+                    </p>
+                </section>
+            );
+        };
+
+        const TeamMember = ({ data, index }) => {
+            const cardRef = React.useRef(null);
+
+            React.useLayoutEffect(() => {
+                const ctx = gsap.context(() => {
+                    // Card Reveal
+                    gsap.to(cardRef.current, {
+                        scrollTrigger: {
+                            trigger: cardRef.current,
+                            start: "top 80%",
+                        },
+                        opacity: 1,
+                        y: 0,
+                        duration: 1.5,
+                        ease: "power3.out"
+                    });
+
+                    // Image Parallax
+                    const img = cardRef.current.querySelector('img');
+                    gsap.fromTo(img, { y: -50 }, {
+                        y: 50,
+                        scrollTrigger: {
+                            trigger: cardRef.current,
+                            start: "top bottom",
+                            end: "bottom top",
+                            scrub: 2
+                        }
+                    });
+                }, cardRef);
+                return () => ctx.revert();
+            }, []);
+
+            return (
+                <article ref={cardRef} className={`member-card ${data.themeClass}`}>
+                    <div className="member-info">
+                        <span className="member-role">{data.role}</span>
+                        <h2 className="member-name">{data.name}</h2>
+                        <p className="member-desc">{data.desc}</p>
+                        <div className="tech-stack">
+                            {data.tech.map(t => <span key={t} className="tech-tag">{t}</span>)}
+                        </div>
+                    </div>
+                    <div className="member-visual">
+                        {/* 
+                             EDIT IMAGES HERE:
+                             Currently using: https://picsum.photos/seed/...
+                             To use your own, put images in an 'images' folder and use:
+                             src="images/kabir.jpg"
+                        */}
+                        <img src={data.image} alt={data.name} />
+                    </div>
+                </article>
+            );
+        };
+
+        const Contact = () => {
+            const [formData, setFormData] = React.useState({
+                name: '',
+                email: '',
+                message: ''
+            });
+            const [status, setStatus] = React.useState({ type: '', message: '' });
+            const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+            const handleChange = (e) => {
+                setFormData({
+                    ...formData,
+                    [e.target.name]: e.target.value
+                });
+                // Clear status when user starts typing
+                if (status.message) setStatus({ type: '', message: '' });
+            };
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setIsSubmitting(true);
+                setStatus({ type: '', message: '' });
+
+                try {
+                    const response = await fetch('/api/contact', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        setStatus({ 
+                            type: 'success', 
+                            message: 'Your inquiry has been sent successfully!' 
+                        });
+                        // Reset form
+                        setFormData({ name: '', email: '', message: '' });
+                    } else {
+                        setStatus({ 
+                            type: 'error', 
+                            message: data.message || 'Failed to send inquiry. Please try again.' 
+                        });
+                    }
+                } catch (error) {
+                    setStatus({ 
+                        type: 'error', 
+                        message: 'Network error. Please check your connection and try again.' 
+                    });
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+
+            return (
+                <section className="contact container">
+                    <h2 className="section-title">Let's Build Something</h2>
+                    <div className="form-container">
+                        {status.message && (
+                            <div className={`status-message ${status.type}`}>
+                                {status.message}
+                            </div>
+                        )}
+                        <form onSubmit={handleSubmit}>
+                            <div className="input-group">
+                                <input 
+                                    type="text" 
+                                    name="name"
+                                    className="input-field" 
+                                    placeholder="Your Name" 
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    required 
+                                />
+                            </div>
+                            <div className="input-group">
+                                <input 
+                                    type="email" 
+                                    name="email"
+                                    className="input-field" 
+                                    placeholder="Email Address" 
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required 
+                                />
+                            </div>
+                            <div className="input-group">
+                                <textarea 
+                                    name="message"
+                                    className="input-field" 
+                                    placeholder="Tell us about your project" 
+                                    value={formData.message}
+                                    onChange={handleChange}
+                                    rows="4"
+                                    required 
+                                />
+                            </div>
+                            <button 
+                                type="submit" 
+                                className="btn" 
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? 'Sending...' : 'Send Inquiry'}
+                            </button>
+                        </form>
+                    </div>
+                </section>
+            );
+        };
+
+        const App = () => {
+            return (
+                <React.Fragment>
+                    <Cursor />
+                    <Hero />
+                    <Philosophy />
+                    <main className="team-section container">
+                        <div className="section-header">
+                            <h2 className="section-title">The Collective</h2>
+                            <span>Team</span>
+                        </div>
+                        {TEAM_DATA.map((member, idx) => (
+                            <TeamMember key={member.id} data={member} index={idx} />
+                        ))}
+                    </main>
+                    <Contact />
+                    <footer>&copy; 2026 Webdeash. All Rights Reserved.</footer>
+                </React.Fragment>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
