@@ -21,6 +21,7 @@ const contactSchema = new mongoose.Schema({
     default: 'General',
     enum: ['General', 'Support', 'Sales', 'Other']
   },
+  /** The reason for enum is very simple : yo vneko certain amount of value matra allowed vaneko here we see 4 option so they are only allowed. */
   message: {
     type: String,
     required: [true, 'Please provide a message'],
